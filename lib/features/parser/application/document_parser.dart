@@ -191,7 +191,7 @@ class DocumentParser {
 
     try {
       // 取回转移过来的那份字节；materialize() 只能调用一次。
-      final bytes = transferable.materialize();
+      final bytes = transferable.materialize().asUint8List();
       sendPort.send(_parseBinary(fileName, bytes, limits));
     } on ParseAbortException catch (e) {
       sendPort.send(e.message);
