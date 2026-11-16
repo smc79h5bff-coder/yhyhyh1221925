@@ -8826,208 +8826,6 @@ Widget _buildSelectionHintBar() {
   );
 }
 
-/// 通用「柔光铺开」图标按钮：点击时从中心向外柔和扩散并淡出（无硬边涟漪），
-/// 与 [_SearchExecButton] 同款点击反馈，但无聚焦回弹，用于高级搜索箭头、
-/// 清空 / 历史等小图标按钮。
-class _SoftGlowTapButton extends StatefulWidget {
-  final Widget child;
-  final VoidCallback onTap;
-  final Color color;
-  final double size;
-  final Duration spreadDuration;
-  const _SoftGlowTapButton({
-    required this.child,
-    required this.onTap,
-    required this.color,
-    required this.size,
-    required this.spreadDuration,
-  });
-
-  @override
-  State<_SoftGlowTapButton> createState() => _SoftGlowTapButtonState();
-}
-
-class _SoftGlowTapButtonState extends State<_SoftGlowTapButton>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _spread;
-
-  @override
-  void initState() {
-    super.initState();
-    _spread = AnimationController(
-      vsync: this,
-      duration: widget.spreadDuration,
-      value: 0,
-    );
-  }
-
-  @override
-  void dispose() {
-    _spread.dispose();
-    super.dispose();
-  }
-
-  void _handleTap() {
-    _spread.forward(from: 0);
-    widget.onTap();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _handleTap,
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: widget.size,
-        height: widget.size,
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.center,
-          children: [
-            AnimatedBuilder(
-              animation: _spread,
-              builder: (_, __) {
-                final t = _spread.value;
-                final opacity = (1 - t) * 0.45;
-                final scale = 1.0 + t * 0.8; // 最大约 1.8× 按钮
-                return Opacity(
-                  opacity: opacity,
-                  child: Transform.scale(
-                    scale: scale,
-                    child: Container(
-                      width: widget.size,
-                      height: widget.size,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: widget.color.withValues(alpha: 0.5),
-                        boxShadow: [
-                          BoxShadow(
-                            color: widget.color.withValues(alpha: 0.35),
-                            blurRadius: 16,
-                            spreadRadius: 6,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-            widget.child,
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SearchExecButton extends StatefulWidget {
-  final IconData icon;
-  final Color color;
-  final bool focused;
-  final Duration spreadDuration;
-  final Duration pressDuration;
-  final VoidCallback onTap;
-  const _SearchExecButton({
-    required this.icon,
-    required this.color,
-    required this.focused,
-    required this.spreadDuration,
-    required this.pressDuration,
-    required this.onTap,
-  });
-
-  @override
-  State<_SearchExecButton> createState() => _SearchExecButtonState();
-}
-
-class _SearchExecButtonState extends State<_SearchExecButton>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _spread;
-
-  @override
-  void initState() {
-    super.initState();
-    _spread = AnimationController(
-      vsync: this,
-      duration: widget.spreadDuration,
-      value: 0,
-    );
-  }
-
-  @override
-  void dispose() {
-    _spread.dispose();
-    super.dispose();
-  }
-
-  void _handleTap() {
-    _spread.forward(from: 0);
-    widget.onTap();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _handleTap,
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 44,
-        height: 44,
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.center,
-          children: [
-            // 柔光铺开：点击时从中心向外柔化扩散并淡出（无硬边涟漪）。
-            AnimatedBuilder(
-              animation: _spread,
-              builder: (_, __) {
-                final t = _spread.value; // 0 → 1
-                final opacity = (1 - t) * 0.45;
-                final scale = 1.0 + t * 0.8; // 最大约 1.8× 按钮
-                return Opacity(
-                  opacity: opacity,
-                  child: Transform.scale(
-                    scale: scale,
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: widget.color.withValues(alpha: 0.5),
-                        boxShadow: [
-                          BoxShadow(
-                            color: widget.color.withValues(alpha: 0.35),
-                            blurRadius: 16,
-                            spreadRadius: 6,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-            // 图标（保留聚焦回弹）
-            TweenAnimationBuilder<double>(
-              key: ValueKey<bool>(widget.focused),
-              tween: widget.focused ? _kExecPop : _kExecIdle,
-              duration: widget.pressDuration,
-              curve: Curves.easeOutBack,
-              builder: (_, scale, child) =>
-                  Transform.scale(scale: scale, child: child),
-              child: GradientIcon(
-                widget.icon,
-                size: 22,
-                fallbackColor: widget.color,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 Future<void> _showSearchSettings() async {
   FocusManager.instance.primaryFocus?.unfocus();
@@ -10899,6 +10697,209 @@ return Listener(
             _handleTapItem(item);
           },
           onLongPress: () => _onLongPressItem(item),
+        ),
+      ),
+    );
+  }
+}
+
+/// 通用「柔光铺开」图标按钮：点击时从中心向外柔和扩散并淡出（无硬边涟漪），
+/// 与 [_SearchExecButton] 同款点击反馈，但无聚焦回弹，用于高级搜索箭头、
+/// 清空 / 历史等小图标按钮。
+class _SoftGlowTapButton extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onTap;
+  final Color color;
+  final double size;
+  final Duration spreadDuration;
+  const _SoftGlowTapButton({
+    required this.child,
+    required this.onTap,
+    required this.color,
+    required this.size,
+    required this.spreadDuration,
+  });
+
+  @override
+  State<_SoftGlowTapButton> createState() => _SoftGlowTapButtonState();
+}
+
+class _SoftGlowTapButtonState extends State<_SoftGlowTapButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _spread;
+
+  @override
+  void initState() {
+    super.initState();
+    _spread = AnimationController(
+      vsync: this,
+      duration: widget.spreadDuration,
+      value: 0,
+    );
+  }
+
+  @override
+  void dispose() {
+    _spread.dispose();
+    super.dispose();
+  }
+
+  void _handleTap() {
+    _spread.forward(from: 0);
+    widget.onTap();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _handleTap,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: widget.size,
+        height: widget.size,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            AnimatedBuilder(
+              animation: _spread,
+              builder: (_, __) {
+                final t = _spread.value;
+                final opacity = (1 - t) * 0.45;
+                final scale = 1.0 + t * 0.8; // 最大约 1.8× 按钮
+                return Opacity(
+                  opacity: opacity,
+                  child: Transform.scale(
+                    scale: scale,
+                    child: Container(
+                      width: widget.size,
+                      height: widget.size,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: widget.color.withValues(alpha: 0.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: widget.color.withValues(alpha: 0.35),
+                            blurRadius: 16,
+                            spreadRadius: 6,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            widget.child,
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SearchExecButton extends StatefulWidget {
+  final IconData icon;
+  final Color color;
+  final bool focused;
+  final Duration spreadDuration;
+  final Duration pressDuration;
+  final VoidCallback onTap;
+  const _SearchExecButton({
+    required this.icon,
+    required this.color,
+    required this.focused,
+    required this.spreadDuration,
+    required this.pressDuration,
+    required this.onTap,
+  });
+
+  @override
+  State<_SearchExecButton> createState() => _SearchExecButtonState();
+}
+
+class _SearchExecButtonState extends State<_SearchExecButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _spread;
+
+  @override
+  void initState() {
+    super.initState();
+    _spread = AnimationController(
+      vsync: this,
+      duration: widget.spreadDuration,
+      value: 0,
+    );
+  }
+
+  @override
+  void dispose() {
+    _spread.dispose();
+    super.dispose();
+  }
+
+  void _handleTap() {
+    _spread.forward(from: 0);
+    widget.onTap();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _handleTap,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 44,
+        height: 44,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            // 柔光铺开：点击时从中心向外柔化扩散并淡出（无硬边涟漪）。
+            AnimatedBuilder(
+              animation: _spread,
+              builder: (_, __) {
+                final t = _spread.value; // 0 → 1
+                final opacity = (1 - t) * 0.45;
+                final scale = 1.0 + t * 0.8; // 最大约 1.8× 按钮
+                return Opacity(
+                  opacity: opacity,
+                  child: Transform.scale(
+                    scale: scale,
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: widget.color.withValues(alpha: 0.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: widget.color.withValues(alpha: 0.35),
+                            blurRadius: 16,
+                            spreadRadius: 6,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            // 图标（保留聚焦回弹）
+            TweenAnimationBuilder<double>(
+              key: ValueKey<bool>(widget.focused),
+              tween: widget.focused ? _FileBrowserScreenState._kExecPop : _FileBrowserScreenState._kExecIdle,
+              duration: widget.pressDuration,
+              curve: Curves.easeOutBack,
+              builder: (_, scale, child) =>
+                  Transform.scale(scale: scale, child: child),
+              child: GradientIcon(
+                widget.icon,
+                size: 22,
+                fallbackColor: widget.color,
+              ),
+            ),
+          ],
         ),
       ),
     );
