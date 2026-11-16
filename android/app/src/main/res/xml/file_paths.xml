@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  给 WinMerge Mobile 传文件用的 FileProvider 路径配置。
+  选中的文件可能来自外部存储，也可能是压缩包内条目落地后的系统临时目录，
+  两者不在同一根目录，因此用 root-path 覆盖全部绝对路径。
+  只在「对比(w)」时按单个文件授予临时读权限给指定包，不开放目录遍历。
+-->
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <root-path name="root" path="." />
+</paths>
